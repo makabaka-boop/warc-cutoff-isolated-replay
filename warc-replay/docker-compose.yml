@@ -1,0 +1,30 @@
+services:
+  # Index + replay service: parses/validates imports, holds records in
+  # memory and serves fixed-instant, sanitised captures.
+  replay:
+    build: .
+    image: restricted-warc-replay:latest
+    environment:
+      VIEWER_ORIGINS: "http://localhost:8080"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+
+  # Static viewer page (time-point + original-URI selection, source
+  # provenance, sandboxed iframe).
+  viewer:
+    image: nginx:1.27-alpine
+    depends_on:
+      - replay
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./viewer:/usr/share/nginx/html:ro
+      - ./viewer/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true

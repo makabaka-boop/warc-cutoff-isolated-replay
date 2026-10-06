@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="api-base" content="http://localhost:8000">
+<title>受限 WARC 时点回放</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>受限 WARC 时点回放</h1>
+  <p class="tagline">所有内容均来自本地归档的固定时点；查看器绝不回源原网站。</p>
+</header>
+
+<main>
+  <section class="panel" aria-labelledby="import-h">
+    <h2 id="import-h">1 · 导入未压缩 WARC/1.1</h2>
+    <p class="hint">最多 10 条 response 记录、载荷合计 ≤ 64 KiB；仅接受 UTF-8 HTML 与 PNG。</p>
+    <form id="import-form">
+      <input type="file" id="warc-file" accept=".warc,application/warc" required>
+      <button type="submit">导入</button>
+      <button type="button" id="reset-btn" class="secondary">清空归档</button>
+    </form>
+    <pre id="import-result" class="result" role="status" aria-live="polite"></pre>
+    <dl id="stats" class="stats">
+      <dt>记录数</dt><dd id="stat-count">–</dd>
+      <dt>载荷总量</dt><dd id="stat-bytes">–</dd>
+      <dt>上限</dt><dd>10 条 / 65,536 字节</dd>
+    </dl>
+  </section>
+
+  <section class="panel" aria-labelledby="records-h">
+    <h2 id="records-h">2 · 归档中的 URI 与抓取时刻</h2>
+    <div id="records-view"><p class="hint">尚未导入。</p></div>
+  </section>
+
+  <section class="panel" aria-labelledby="replay-h">
+    <h2 id="replay-h">3 · 选择时点与原 URI</h2>
+    <form id="replay-form">
+      <label>原 URI
+        <select id="uri-select" required></select>
+      </label>
+      <label>截止时刻（UTC，YYYY-MM-DDTHH:MM:SSZ）
+        <input id="instant-input" type="text"
+               pattern="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"
+               placeholder="2026-10-06T12:00:00Z" required>
+      </label>
+      <button type="submit">回放该时点</button>
+    </form>
+    <div id="source-card" class="source-card hidden" aria-live="polite">
+      <h3>实际记录来源</h3>
+      <dl>
+        <dt>请求的原 URI</dt><dd id="src-uri"></dd>
+        <dt>用户截止时刻</dt><dd id="src-cutoff"></dd>
+        <dt>选中记录的抓取时刻</dt><dd id="src-date"></dd>
+        <dt>WARC-Record-ID</dt><dd id="src-id"></dd>
+        <dt>内容类型</dt><dd id="src-ct"></dd>
+        <dt>字节数</dt><dd id="src-len"></dd>
+      </dl>
+      <p id="src-gap" class="gap-msg hidden"></p>
+    </div>
+  </section>
+
+  <section class="panel replay-panel" aria-labelledby="frame-h">
+    <h2 id="frame-h">4 · 固定时点回放（无脚本 / 无同源权限沙箱）</h2>
+    <iframe id="replay-frame" title="归档回放" sandbox=""
+            referrerpolicy="no-referrer"
+            src="about:blank"></iframe>
+  </section>
+</main>
+
+<script src="viewer.js"></script>
+</body>
+</html>
