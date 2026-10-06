@@ -1,0 +1,22 @@
+services:
+  # Index + replay service: the only origin that ever holds archived bytes.
+  replay:
+    build: ./replay
+    environment:
+      # Only the static page origin may frame/query the replay service.
+      WEB_ORIGIN: "http://localhost:8080"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  # Static control page on a *different* origin (no script inside the frame).
+  web:
+    image: nginxinc/nginx-unprivileged:1.27-alpine
+    volumes:
+      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web:/usr/share/nginx/html:ro
+    ports:
+      - "8080:8080"
+    depends_on:
+      - replay
+    restart: unless-stopped

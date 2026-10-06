@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>受限 WARC 回放 · 固定时点安全历史</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; color:#1c2330; background:#f3f5f8; }
+  header { background:#17233a; color:#fff; padding:18px 24px; }
+  header h1 { margin:0; font-size:18px; }
+  header p { margin:4px 0 0; color:#aebbd2; font-size:12.5px; }
+  .wrap { display:grid; grid-template-columns: 340px 1fr; gap:18px; padding:18px 24px; align-items:start; }
+  .panel { background:#fff; border:1px solid #dfe4ec; border-radius:10px; padding:16px; }
+  .panel h2 { margin:0 0 10px; font-size:14px; text-transform:uppercase; letter-spacing:.05em; color:#5a667c; }
+  label { display:block; font-size:12px; color:#566; margin:10px 0 4px; }
+  input[type=datetime-local], select, input[type=file] { width:100%; padding:7px 9px; border:1px solid #c9d0dc; border-radius:6px; font:inherit; }
+  button { margin-top:14px; width:100%; padding:9px; border:0; border-radius:6px; background:#2457c5; color:#fff; font-weight:600; cursor:pointer; }
+  button:hover { background:#1d47a3; }
+  .src { margin-top:14px; border-top:1px dashed #d5dbe6; padding-top:10px; font-size:12.5px; }
+  .src table { width:100%; border-collapse:collapse; }
+  .src td { padding:3px 4px; vertical-align:top; word-break:break-all; }
+  .src td:first-child { color:#667; width:78px; }
+  .badge { display:inline-block; padding:1px 8px; border-radius:99px; font-size:11.5px; font-weight:600; }
+  .ok { background:#e3f4e8; color:#1e6b35; }
+  .gap { background:#fdecec; color:#9a2b2b; }
+  .note { font-size:11.5px; color:#7b8496; margin-top:8px; }
+  iframe { width:100%; height:74vh; border:1px solid #dfe4ec; border-radius:10px; background:#fff; }
+  .frame-meta { font-size:12px; color:#5a667c; margin:0 0 8px; }
+  code { background:#eef1f6; padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>受限 WARC 回放器</h1>
+  <p>所有内容来自本地归档、按你选择的截止时刻固定；脚本被移除，缺口显式展示，<strong>绝不回源到线上</strong>。</p>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h2>选择时点与原始 URI</h2>
+
+    <label for="cutoff">截止时刻（UTC，取不晚于该时刻的最新记录）</label>
+    <input id="cutoff" type="datetime-local" step="1" value="2015-10-21T08:00">
+
+    <label for="uri">原始 URI</label>
+    <select id="uri"><option value="">（导入归档后填充）</option></select>
+
+    <button id="go">在沙箱中回放该时点</button>
+
+    <div class="src" id="src">
+      <table>
+        <tr><td>实际记录</td><td id="m-rec">—</td></tr>
+        <tr><td>抓取时刻</td><td id="m-date">—</td></tr>
+        <tr><td>原始 URI</td><td id="m-uri">—</td></tr>
+        <tr><td>内容类型</td><td id="m-type">—</td></tr>
+        <tr><td>状态</td><td id="m-state">—</td></tr>
+      </table>
+      <div class="note">记录选择由回放服务计算；页面本身不接触归档外网络。</div>
+    </div>
+
+    <details style="margin-top:14px">
+      <summary style="cursor:pointer;font-size:12.5px;color:#5a667c">导入 / 替换归档（≤ 10 条、≤ 64 KiB）</summary>
+      <label style="margin-top:8px">未压缩 WARC/1.1（仅 response 记录）</label>
+      <input id="warcfile" type="file" accept=".warc,application/warc">
+      <button id="upload" style="background:#475168">导入（替换当前内存归档）</button>
+      <div id="uploadmsg" class="note"></div>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h2>沙箱回放帧（无脚本 · 无同源权限 · 图片仅来自回放服务）</h2>
+    <p class="frame-meta" id="frame-meta">尚未选择。</p>
+    <iframe
+      id="frame"
+      title="WARC replay sandbox"
+      sandbox=""
+      referrerpolicy="no-referrer"
+      csp="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
+      src="about:blank"></iframe>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
